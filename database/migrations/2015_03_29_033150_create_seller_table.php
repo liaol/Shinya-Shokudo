@@ -16,6 +16,10 @@ class CreateSellerTable extends Migration {
 		{
 			$table->increments('id');
 			$table->timestamps();
+			$table->string('name');
+			$table->string('phone');
+			$table->string('remark');//备注
+			$table->string('status');//1为午餐 2为晚餐 3两餐都提供 4暂停
 		});
 	}
 

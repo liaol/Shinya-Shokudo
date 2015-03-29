@@ -16,6 +16,8 @@ class CreateConfigTable extends Migration {
 		{
 			$table->increments('id');
 			$table->timestamps();
+			$table->integer('lunch_time');//午餐截止时间
+			$table->integer('supper_time');//晚餐截止时间
 		});
 	}
 

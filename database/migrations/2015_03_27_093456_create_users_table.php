@@ -23,6 +23,7 @@ class CreateUsersTable extends Migration {
 			$table->double('money',10,1);
 			$table->integer('level');//用户类型
 	//		$table->rememberToken();
+			$table->integer('status');
 			$table->timestamps();
 		});
 	}
@@ -34,7 +35,7 @@ class CreateUsersTable extends Migration {
 	 */
 	public function down()
 	{
-		//
+		Schema::drop('users');
 	}
 
 }

@@ -16,6 +16,11 @@ class CreateGoodsTable extends Migration {
 		{
 			$table->increments('id');
 			$table->timestamps();
+			$table->integer('seller_id');
+			$table->double('price',10,1);
+			$table->integer('count');//售出数量
+			$table->string('status');
+			
 		});
 	}
 
