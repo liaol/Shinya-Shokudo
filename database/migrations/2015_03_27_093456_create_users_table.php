@@ -22,10 +22,9 @@ class CreateUsersTable extends Migration {
 			$table->string('qq');
 			$table->double('money',10,1);
 			$table->integer('level');//用户类型
-			$table->rememberToken();
+	//		$table->rememberToken();
 			$table->timestamps();
 		});
-	//
 	}
 
 	/**
