@@ -19,3 +19,15 @@ Route::controllers([
 	'auth' => 'Auth\AuthController',
 	'password' => 'Auth\PasswordController',
 ]);
+
+Route::group(array('perfix'=>'/auth'),function(){
+    Route::get('/login',array('uses'=>'BackendController@login'));
+    Route::post('/login',array('uses'=>'BackendController@loginPost'));
+});
+
+Route::group(array('perfix'=>'/admin'),function(){
+    Route::get('/index',array('uses'=>'BackendController@index'));
+    Route::get('/seller/list',array('uses'=>'BackendController@sellerList'));
+    Route::get('/goods/list/{sellerId}',array('uses'=>'BackendController@goodsList'));
+    Route::get('/user/list',array('uses'=>'BackendController@userList'));
+});

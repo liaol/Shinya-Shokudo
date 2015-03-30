@@ -14,6 +14,7 @@ class CreateSellerTable extends Migration {
 	{
 		Schema::create('seller', function(Blueprint $table)
 		{
+			$table->engine = 'InnoDB';
 			$table->increments('id');
 			$table->timestamps();
 			$table->string('name');
