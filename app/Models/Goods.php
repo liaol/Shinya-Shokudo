@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Eloquent\Model;
 
-class Seller extends Model {
+class Goods extends Model {
 
 
 	/**
@@ -10,14 +10,14 @@ class Seller extends Model {
 	 *
 	 * @var string
 	 */
-	protected $table = 'seller';
+	protected $table = 'goods';
 
 	/**
 	 * The attributes that are mass assignable.
 	 *
 	 * @var array
 	 */
-    protected $fillable = ['name', 'phone', 'remark','status','delivery_time'];
+    protected $fillable = ['seller_id', 'price', 'count','status','name'];
 
 
 }

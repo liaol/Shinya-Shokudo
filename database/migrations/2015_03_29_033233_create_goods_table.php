@@ -15,8 +15,9 @@ class CreateGoodsTable extends Migration {
 		Schema::create('goods', function(Blueprint $table)
 		{
             $table->engine = 'InnoDB';
-		$table->increments('id');
+            $table->increments('id');
 			$table->timestamps();
+            $table->string('name');
 			$table->integer('seller_id');
 			$table->double('price',10,1);
 			$table->integer('count');//售出数量

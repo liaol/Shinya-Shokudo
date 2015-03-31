@@ -3,11 +3,13 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta http-equiv="X-UA-Compatible" content="IE=8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>点餐系统</title>
 	<link href='/static/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
 </head>
 <body>
+    <div class="container">
 	<nav class="navbar navbar-default">
 		<div class="container-fluid">
 			<div class="navbar-header">
@@ -40,6 +42,7 @@
 			</div>
 		</div>
 	</nav>
+    </div>
 	<!-- Scripts -->
 	<script src="/static/js/jquery.min.js"></script>
 	<script src="/static/js/bootstrap.min.js"></script>

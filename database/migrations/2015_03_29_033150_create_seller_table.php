@@ -20,7 +20,8 @@ class CreateSellerTable extends Migration {
 			$table->string('name');
 			$table->string('phone');
 			$table->string('remark');//备注
-			$table->string('status');//1为午餐 2为晚餐 3两餐都提供 4暂停
+			$table->string('delivery_time');//1为all 2为午餐 3为晚餐
+			$table->string('status');//1为正常 2为暂停 3为删除
 		});
 	}
 
