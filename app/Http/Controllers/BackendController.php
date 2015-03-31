@@ -1,6 +1,8 @@
 <?php namespace App\Http\Controllers;
 
-class BackendController extends Controllers{
+use App\Models\Seller;
+
+class BackendController extends Controller{
 
     public function login()
     {
@@ -19,7 +21,8 @@ class BackendController extends Controllers{
 
     public function sellerList()
     {
-
+        $data = Seller::where('status',1)->select('name','phone')->get()->toArray();
+        return view('backend/sellerlist',$data);
     }
 
     public function goodsList()
@@ -28,5 +31,6 @@ class BackendController extends Controllers{
 
     public function userList()
     {
+
     }
 }
