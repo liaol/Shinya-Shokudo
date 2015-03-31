@@ -27,7 +27,11 @@ Route::group(array('prefix'=>'/auth'),function(){
 
 Route::group(array('prefix'=>'/admin'),function(){
     Route::get('/index',array('uses'=>'BackendController@index'));
-    Route::get('/seller/list',array('uses'=>'BackendController@sellerList'));
-    Route::get('/goods/list/{sellerId}',array('uses'=>'BackendController@goodsList'));
-    Route::get('/user/list',array('uses'=>'BackendController@userList'));
+    Route::get('/seller/list',array('uses'=>'BackendController@listSeller'));
+    Route::get('/seller/add',array('uses'=>'BackendController@addSeller'));
+    Route::post('/seller/add',array('uses'=>'BackendController@addSellerPost'));
+    Route::post('/seller/update',array('uses'=>'BackendController@updateSellerPost'));
+    Route::get('/goods/list/{sellerId}',array('uses'=>'BackendController@listGoods'));
+    Route::post('/goods/add',array('uses'=>'BackendController@addGoodsPost'));
+    Route::get('/user/list',array('uses'=>'BackendController@listUser'));
 });
