@@ -32,6 +32,7 @@ Route::group(array('prefix'=>'/admin'),function(){
     Route::post('/seller/add',array('uses'=>'BackendController@addSellerPost'));
     Route::post('/seller/update',array('uses'=>'BackendController@updateSellerPost'));
     Route::get('/goods/list/{sellerId}',array('uses'=>'BackendController@listGoods'));
+    Route::post('/goods/update',array('uses'=>'BackendController@updateGoodsPost'));
     Route::post('/goods/add',array('uses'=>'BackendController@addGoodsPost'));
     Route::get('/user/list',array('uses'=>'BackendController@listUser'));
 });

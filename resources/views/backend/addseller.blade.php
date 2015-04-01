@@ -3,7 +3,7 @@
 <div class="container ">
     <h2>添加商家 <a style="margin-left: 50px;" class="btn btn-info" href="/admin/seller/list">商家列表</a></h2>
     @if (isset($msg))
-        <div class="alert @if ($status == "error") alert-danger @else alert-success @endif">
+        <div class="alert alert-dismissible @if ($status == "error") alert-danger @else alert-success @endif">
             <strong>{{$msg}}</strong>
         </div>
     @endif

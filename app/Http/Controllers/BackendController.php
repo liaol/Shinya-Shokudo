@@ -3,6 +3,7 @@
 use App\Models\Seller;
 use App\Models\Goods;
 use Request;
+use Response;
 
 class BackendController extends Controller{
 
@@ -22,7 +23,7 @@ class BackendController extends Controller{
 
     public function listSeller()
     {
-        $data = Seller::where('status',1)->select('id','name','phone','delivery_time','remark')->orderBy('id','desc')->get()->toArray();
+        $data = Seller::where('status','!=',3)->select('id','name','phone','delivery_time','remark','status')->orderBy('status','asc')->orderBy('id','desc')->get()->toArray();
         return view('backend/listseller',array('data'=>$data));
     }
 
@@ -61,9 +62,10 @@ class BackendController extends Controller{
         if (Request::input('phone')) 
             $update['phone'] = Request::input('phone');
         if ($update) {
-            Seller::where('id',$sellerId)->update($update);
+            if (Seller::where('id',$sellerId)->update($update))
+                return Response::json(array('status'=>'success'));
         }
-        return Response::redirect(Request::url());
+        return Response::json(array('status'=>'error'));
     }
 
     public function listGoods($sellerId)
@@ -88,6 +90,23 @@ class BackendController extends Controller{
             )); 
         }
         return redirect('/admin/goods/list/' . $sellerId);
+    }
+
+    public function updateGoodsPost()
+    {
+        $goodsId = Request::input('goods_id');
+        $update = array();
+        if (Request::input('status'))
+            $update['status'] = Request::input('status');
+        if (Request::input('name')) 
+            $update['name'] = Request::input('name');
+        if (Request::input('price')) 
+            $update['price'] = Request::input('price');
+        if ($update) {
+            if (Goods::where('id',$goodsId)->update($update))
+                return Response::json(array('status'=>'success'));
+        }
+        return Response::json(array('status'=>'error'));
     }
 
 

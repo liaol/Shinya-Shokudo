@@ -46,8 +46,12 @@
                     <td>{{$v['price']}}</td>
                     <td>{{$v['count']}}</td>
                     <td>
-                        <button class="btn btn-warning btn-sm" id="stop" data={{$v['id']}}>暂停</button>
-                        <button class="btn btn-danger btn-sm" id="delete" data={{$v['id']}}>删除</button>
+                        @if ($v['status'] == 1)
+                            <button class="btn btn-warning btn-sm close-btn" data={{$v['id']}}>关闭</button>
+                        @else 
+                            <button class="btn btn-success btn-sm open-btn" data={{$v['id']}}>开放</button>
+                        @endif
+                        <button class="btn btn-danger btn-sm del-btn" data={{$v['id']}}>删除</button>
                     </td>   
                 </tr>
             @endforeach
@@ -71,11 +75,74 @@ $(function(){
             '</div>'
         );
     });
+    $(".close-btn").on('click',close);
+
+    $(".open-btn").on('click',open);
+
+    function open(that){
+        var that = $(this);
+        var con = confirm('确定开放吗？');
+        if(con){
+            $.ajax({
+                type:"POST",
+                url:"/admin/goods/update",
+                data:{_token:"{{csrf_token()}}",goods_id:that.attr('data'),status:1}
+            }).done(function(data){
+                if(data.status == 'success'){
+                    that.toggleClass('btn-warning close-btn btn-success open-btn').html("关闭");
+                    that.unbind();//先解绑原来的事件 再绑定新事件
+                    that.on('click',close);
+                }else{
+                    alert('操作失败！');
+                }
+            });
+        }else{
+            return false;
+        }
+    }
+
+    function close(that){
+        var that = $(this);
+        var con = confirm('确定关闭吗？');
+        if(con){
+            $.ajax({
+                type:"POST",
+                url:"/admin/goods/update",
+                data:{_token:"{{csrf_token()}}",goods_id:that.attr('data'),status:2}
+            }).done(function(data){
+                if(data.status == 'success'){
+                    that.toggleClass('btn-warning close-btn btn-success open-btn').html("开放");
+                    that.unbind();
+                    that.on('click',open);
+                }else{
+                    alert('操作失败！');
+                }
+            });
+        }else{
+            return false;
+        }
+    }
+
+    $(".del-btn").on('click',function(){
+        var con = confirm('确定删除吗？');
+        if(con){
+            var that = $(this);
+            $.ajax({
+                type:"POST",
+                url:"/admin/goods/update",
+                data:{_token:"{{csrf_token()}}",goods_id:that.attr('data'),status:3}
+            }).done(function(data){
+                if(data.status == 'success'){
+                    that.parent().parent().fadeOut();
+                }else{
+                    alert('操作失败！');
+                }
+            });
+        }else{
+            return false;
+        }
+    });
 });
-
-
-
-    
 </script>
 
 @endsection
