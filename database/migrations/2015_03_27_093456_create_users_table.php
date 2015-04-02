@@ -22,6 +22,7 @@ class CreateUsersTable extends Migration {
 			$table->string('qq');
 			$table->double('money',10,1);
 			$table->integer('level');//用户类型
+			$table->integer('department_id');//部门id
 	//		$table->rememberToken();
 			$table->integer('status');
 			$table->timestamps();

@@ -35,4 +35,7 @@ Route::group(array('prefix'=>'/admin'),function(){
     Route::post('/goods/update',array('uses'=>'BackendController@updateGoodsPost'));
     Route::post('/goods/add',array('uses'=>'BackendController@addGoodsPost'));
     Route::get('/user/list',array('uses'=>'BackendController@listUser'));
+    Route::get('/user/add',array('uses'=>'BackendController@addUser'));
+    Route::post('/user/add',array('uses'=>'BackendController@addUserPost'));
+    Route::post('/user/update',array('uses'=>'BackendController@updateUserPost'));
 });
