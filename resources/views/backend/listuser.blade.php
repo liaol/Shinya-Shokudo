@@ -92,7 +92,7 @@
                 $.ajax({
                     type:"POST",
                     url:"/admin/user/update",
-                    data:{_token:"{{csrf_token()}}",user_id:that.attr('data'),status:3}
+                    data:{_token:"{{csrf_token()}}",user_id:that.attr('data'),status:2}
                 }).done(function(data){
                     if(data.status == 'success'){
                         that.parent().parent().fadeOut();
