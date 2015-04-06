@@ -4,8 +4,9 @@
 <div class="container">
     <h2>商家列表<a style="margin-left: 50px;" class="btn btn-info" href="/admin/seller/add">添加商家</a></h2>
     <div class="well" style="display:none" id="update-form">
-        <form method="POST" class="form-horizontal" >
+        <form method="POST" class="form-horizontal" action="/admin/seller/update" >
         <input type="hidden" name="_token" value="{{ csrf_token() }}">
+        <input type="hidden" id="seller_id" name="seller_id" value="">
         <div class="form-group">
             <div class="row">
                 <label for="name" class="col-md-1 control-label">名称</label>
@@ -26,9 +27,9 @@
             <div class="row">
                 <label for="delivery_time" class="col-md-1 control-label">配送时间</label>
                 <div class="col-md-2">
-                    <input name="delivery_time" type="radio" value="1" checked />全天
-                    <input name="delivery_time" type="radio" value="2" />午餐
-                    <input name="delivery_time" type="radio" value="3" />晚餐
+                    <input name="delivery_time" type="radio" id="radio-1" value="1"/>全天
+                    <input name="delivery_time" type="radio" id="radio-2" value="2" />午餐
+                    <input name="delivery_time" type="radio" id="radio-3" value="3" />晚餐
                 </div>
             </div>
         </div>
@@ -155,11 +156,25 @@
             var phone = $(this).parent().parent().find('td').eq(1).html();
             var delivery_time = $(this).parent().parent().find('td').eq(2).html();
             var remark = $(this).parent().parent().find('td').eq(3).html();
-            $("#name").value(name);
-            $("#phone").value(phone);
-            $("#remark").value(remark);
-            
-        
+            var seller_id = $(this).attr('data');
+            $("#name").val(name);
+            $("#phone").val(phone);
+            $("#remark").val(remark);
+            $('#seller_id').val(seller_id);
+            var type;
+            switch (delivery_time.trim()){//要去除空格先
+                case "午餐":
+                    type = '2';
+                    break;
+                case "晚餐":
+                    type = '3';
+                    break;
+                default:
+                    type = '1';
+                    break;
+            }
+            $("#radio-"+type).click();
+            $("#update-form").show();
         });
     });
 </script>
