@@ -3,9 +3,11 @@
 use App\Models\Seller;
 use App\Models\Goods;
 use App\Models\Department;
+use App\Models\Config as ConfigModel;
 use App\User;
 use Request;
 use Response;
+use Carbon\Carbon;
 
 class BackendController extends Controller{
 
@@ -145,7 +147,8 @@ class BackendController extends Controller{
         $department = Request::input('department');
         $qq = Request::input('qq');
         $defaultPw = '123456';
-        for ($i=0;$i<count($name)-1;$i++){//舍去最后一行空的
+        $count = count($name) >1 ? count($name)-1 : 1;
+        for ($i=0;$i<=$count-1;$i++){//舍去最后一行空的
             User::create(array(
                 'name'=>$name[$i],
                 'real_name'=>$realName[$i],
@@ -184,4 +187,102 @@ class BackendController extends Controller{
             return Response::json(array('status'=>'error'));
         return redirect('/admin/user/list');
     }
+
+    public function listDepartment()
+    {
+        $data = Department::where('status',1)->select('id','name')->get()->toArray();
+        return view('backend/listdepartment',array('data'=>$data));
+    }
+
+    public function addDepartmentPost()
+    {
+        $name = Request::input('name');
+        Department::create(array(
+            'name'=>$name,
+            'status'=>1
+        ));
+        return redirect('/admin/department/list');
+    }
+
+    public function updateDepartmentPost()
+    {
+        $id = Request::input('department_id');
+        $update = array();
+        if (Request::input('status'))
+            $update['status'] = Request::input('status');
+        if ($update) {
+            if (Department::where('id',$id)->update($update))
+                return Response::json(array('status'=>'success'));
+        }
+        return Response::json(array('status'=>'error'));
+    }
+
+    public function updateMoney()
+    {
+        if ($userId = Request::input('userId')) {
+            $userInfo = User::where('id',$userId)->select('id','real_name','money')->first();
+            if (empty($userInfo)) {
+                return $this->errorPage('找不着该用户');
+            }
+            return view('backend/updatemoney',array('userInfo'=>$userInfo));
+        }
+    }
+
+    public function updateMoneyPost()
+    {
+        $model = User::where('id',Request::input('userId'));
+        if (Request::input('type') == 1) {
+            $update = $model->increment('money',Request::input('money'));
+            //Todo 添加记录
+        } else {
+            $update = $model->decrement('money',Request::input('money'));
+            //Todo 添加记录
+        }
+        return redirect('/admin/user/list');
+    }
+
+    private function errorPage($msg,$uri = '/index')
+    {
+        return $msg;
+    }
+
+    //菜单
+    public function menu()
+    {
+         $time = $this->getTime(); 
+         $seller = Seller::where('status',1)->whereIn('delivery_time',[$time,3])->select('id','name','phone','remark','delivery_time')->get()->toArray();
+         foreach ($seller as $k=>$v) {
+            $seller[$k]['menu'] = Goods::where('status',1)->where('seller_id',$v['id'])->select('name','count','price')->get()->toArray();
+         }
+         return view('/customer/menu',array('menu'=>$seller));
+    }
+
+    private function getTime()
+    {
+        $today = Carbon::today();
+        if ($_SERVER['REQUEST_TIME'] < $today->timestamp + strtotime($this->getConfig()->lunch_time))
+            return 2;//午餐
+        return 3;//晚餐
+    }
+
+    private function getConfig()
+    {
+        return ConfigModel::select('lunch_time','supper_time')->first();
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

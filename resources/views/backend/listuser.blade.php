@@ -36,8 +36,8 @@
                     <label for="department" class="col-md-1 control-label">部门</label>
                     <div class="col-md-2">
                         <select  class="form-control" type="text" name="department" id="department">
-                            @foreach($department as $v)
-                                <option value="{{$v['id']}}" id="option-{{$v['id']}}">{{$v['name']}}</option>
+                            @foreach($department as $k=>$v)
+                                <option value="{{$v['id']}}" id="option-{{$k}}">{{$v['name']}}</option>
                             @endforeach
                         </select>
                     </div>
@@ -73,8 +73,9 @@
                     <td>{{$v['qq']}}</td>
                     <td>
                         <a class="btn btn-link btn-sm" href="/admin/goods/list/{{$v['id']}}">历史记录</a>
+                        <a class="btn btn-link btn-sm" href="/admin/money/update?userId={{$v['id']}}">充值</a>
                         <button class="btn btn-primary btn-sm update-btn" data={{$v['id']}}>修改</button>
-                        <button class="btn btn-warning btn-sm reset-btn" data={{$v['id']}}>充值密码</button>
+                        <button class="btn btn-warning btn-sm reset-btn" data={{$v['id']}}>重置密码</button>
                         <button class="btn btn-danger btn-sm del-btn" data={{$v['id']}}>删除</button>
                     </td>   
                 </tr>
@@ -116,7 +117,7 @@
             $("#qq").val(qq);
             $('#user_id').val(user_id);
             var option = $("#department option");
-            for(var i=1;i<=option.length;i++){
+            for(var i=0;i<option.length;i++){
                 if($("#option-"+i).html().trim() == department.trim()){
                     $("#option-"+i).attr("selected","selected");
                 }
