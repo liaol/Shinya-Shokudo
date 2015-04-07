@@ -4,12 +4,21 @@ use App\Models\Seller;
 use App\Models\Goods;
 use App\Models\Department;
 use App\Models\Config as ConfigModel;
+use App\Models\Order;
+use App\Models\Money;
 use App\User;
 use Request;
 use Response;
 use Carbon\Carbon;
 
 class BackendController extends Controller{
+
+    private $userInfo;
+    
+    public function __construct()
+    {
+        $this->userInfo = array('user_id'=>1);
+    }
 
     public function login()
     {
@@ -249,12 +258,13 @@ class BackendController extends Controller{
     //菜单
     public function menu()
     {
-         $time = $this->getTime(); 
-         $seller = Seller::where('status',1)->whereIn('delivery_time',[$time,3])->select('id','name','phone','remark','delivery_time')->get()->toArray();
-         foreach ($seller as $k=>$v) {
-            $seller[$k]['menu'] = Goods::where('status',1)->where('seller_id',$v['id'])->select('name','count','price')->get()->toArray();
-         }
-         return view('/customer/menu',array('menu'=>$seller));
+        
+        $time = $this->getTime(); 
+        $seller = Seller::where('status',1)->whereIn('delivery_time',[$time,3])->select('id','name','phone','remark','delivery_time')->get()->toArray();
+        foreach ($seller as $k=>$v) {
+            $seller[$k]['menu'] = Goods::where('status',1)->where('seller_id',$v['id'])->select('id','name','count','price')->get()->toArray();
+        }
+        return view('/front/menu',array('data'=>$seller));
     }
 
     private function getTime()
@@ -269,6 +279,78 @@ class BackendController extends Controller{
     {
         return ConfigModel::select('lunch_time','supper_time')->first();
     }
+
+    public function makeOrder()
+    {
+        $sellerId = Request::input('sellerId');
+        $goodsId = Request::input('goodsId');
+        $seller = Seller::where('id',$sellerId)->where('status',1)->select('id','name')->first();
+        if (empty($seller)) {
+            return $this->errorPage('找不到该商家!');
+        }
+        $goods = Goods::where('id',$goodsId)->where('status',1)->select('id','name')->first();
+        if (empty($goods)) {
+            return $this->errorPage('找不到这道菜！');
+        }
+        return view('/front/makeorder',array('seller'=>$seller,'goods'=>$goods));
+    }
+
+    public function makeOrderPost()
+    {
+        $validator = \Validator::make(
+            Request::input(),
+            array(
+                'seller_id' => 'required',
+                'goods_id' => 'required',
+                'quantity' => 'required|between:1,10',
+                'time_type'=>'required|in:2,3',
+                'pay_type'=>'required|in:1,2',
+                'remark'=>'between:1,100'
+            )
+        );      
+        if ($validator->fails()) {
+            return $validator->messages()->all();
+            return $this->errorPage('系统错误！');
+        }
+        if (!$this->checkTime(Request::input('time_type'))){
+            return $this->errorPage('点餐时间已过，请联系前台妹纸！');
+        }
+        if (!Seller::where('status',1)->whereIn('delivery_time',[1,Request::input('time_type')])->select('id')->first()){
+            return $this->errorPage('找不到该商家,可能这个时段不送！');
+        }
+        if($price = Goods::where('status',1)->where('id',Request::input('goods_id'))->select('price')->first()) {
+            $order = Order::create(array(
+                'seller_id'=>Request::input('time_type'),
+                'goods_id'=>Request::input('goods_id'),
+                'quantity'=>Request::input('quantity'),
+                'money'=>$price->price*Request::input('quantity'),
+                'status'=>1,
+                'time_type'=>Request::input('time_type'),
+                'pay_type'=>Request::input('pay_type'),
+                'user_id' => $this->userInfo['user_id'],
+            ));
+            return redirect('/order/my');
+        } else {
+            return $this->errorPage('找不到这道菜,可能下架了！');
+        }
+    }
+
+    private function checkTime($type)
+    {
+        return true;
+    }
+
+    public function myOrder()
+    {
+        $data = Order::join('seller','order.seller_id','=','seller.id')
+            ->join('goods','order.goods_id','=','goods.id')
+            ->where('order.user_id',$this->userInfo['user_id'])
+            ->select('order.id','order.quantity','seller.name as seller_name','goods.name as goods_name','order.money','order.status','order.created_at')
+            ->orderBy('order.id','desc')
+            ->paginate(15);
+        return $data;
+    }
+
 }
 
 

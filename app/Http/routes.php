@@ -52,3 +52,6 @@ Route::group(array('prefix'=>'/admin'),function(){
 });
 
 Route::get('/menu',array('uses'=>'BackendController@menu'));
+Route::get('/order/make',array('uses'=>'BackendController@makeOrder'));
+Route::post('/order/make',array('uses'=>'BackendController@makeOrderPost'));
+Route::get('/order/my',array('uses'=>'BackendController@myOrder'));
