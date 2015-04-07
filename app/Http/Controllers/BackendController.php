@@ -13,6 +13,13 @@ use Carbon\Carbon;
 
 class BackendController extends Controller{
 
+    private $userInfo;
+    
+    public function __construct()
+    {
+        $this->userInfo = array('user_id'=>1);
+    }
+
     public function login()
     {
         return view('auth.login'); 
@@ -320,17 +327,30 @@ class BackendController extends Controller{
                 'status'=>1,
                 'time_type'=>Request::input('time_type'),
                 'pay_type'=>Request::input('pay_type'),
+                'user_id' => $this->userInfo['user_id'],
             ));
-            return redirect('/order/list');
+            return redirect('/order/my');
         } else {
             return $this->errorPage('找不到这道菜,可能下架了！');
         }
     }
 
-    public function checkTime($type)
+    private function checkTime($type)
     {
         return true;
     }
+
+    public function myOrder()
+    {
+        $data = Order::join('seller','order.seller_id','=','seller.id')
+            ->join('goods','order.goods_id','=','goods.id')
+            ->where('order.user_id',$this->userInfo['user_id'])
+            ->select('order.id','order.quantity','seller.name as seller_name','goods.name as goods_name','order.money','order.status','order.created_at')
+            ->orderBy('order.id','desc')
+            ->paginate(15);
+        return $data;
+    }
+
 }
 
 

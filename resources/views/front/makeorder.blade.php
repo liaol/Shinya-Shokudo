@@ -3,6 +3,7 @@
 <div class="container ">
     <h2>下订单 <a style="margin-left: 50px;" class="btn btn-info" href="/menu">菜单</a></h2>
     <div class="well">
+        <h3>{{$seller->name}} -- {{$goods->name}}</h3>
         <form method="POST" action="/order/make">
             <input type="hidden" name="_token" value="{{ csrf_token() }}">
             <input type="hidden" name="seller_id" value="{{$seller->id}}">
