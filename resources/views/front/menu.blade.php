@@ -6,7 +6,9 @@
 
 @section('content')
 <div class="container">
-    <h2>菜单</h2>
+    <h2>菜单
+        <a class="btn btn-info" href="/order/my">我的订单</a>
+    </h2>
     @foreach($data as $k=>$v)
         <h3>{{$v['name']}}</h3> 
         <h4>电话：{{$v['phone']}}&nbsp;&nbsp;&nbsp;备注：{{$v['remark']}}</h4>

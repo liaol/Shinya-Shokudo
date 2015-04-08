@@ -1,19 +1,16 @@
-@extends('app')
+@extends('layout')
 
 @section('content')
-<div class="container-fluid">
+<div class="container">
 	<div class="row">
 		<div class="col-md-8 col-md-offset-2">
 			<div class="panel panel-default">
-				<div class="panel-heading">Login</div>
+				<div class="panel-heading">登录</div>
 				<div class="panel-body">
-					@if (count($errors) > 0)
+					@if (Session::has('error'))
 						<div class="alert alert-danger">
-							<strong>Whoops!</strong> 输入有误！.<br><br>
 							<ul>
-								@foreach ($errors->all() as $error)
-									<li>{{ $error }}</li>
-								@endforeach
+									<li>{{ Session::get('error') }}</li>
 							</ul>
 						</div>
 					@endif
@@ -23,25 +20,15 @@
 
 						<div class="form-group">
 							<label class="col-md-4 control-label">用户名</label>
-							<div class="col-md-6">
-								<input type="email" class="form-control" name="email" value="{{ old('email') }}">
+							<div class="col-md-4">
+								<input type="text" class="form-control" name="username" value="{{ old('username') }}">
 							</div>
 						</div>
 
 						<div class="form-group">
 							<label class="col-md-4 control-label">密码</label>
-							<div class="col-md-6">
+							<div class="col-md-4">
 								<input type="password" class="form-control" name="password">
-							</div>
-						</div>
-
-						<div class="form-group">
-							<div class="col-md-6 col-md-offset-4">
-								<div class="checkbox">
-									<label>
-										<input type="checkbox" name="remember"> 记住我
-									</label>
-								</div>
 							</div>
 						</div>
 
@@ -50,8 +37,7 @@
 								<button type="submit" class="btn btn-primary" style="margin-right: 15px;">
 									登录
 								</button>
-
-								<a href="/password/email">Forgot Your Password?</a>
+								<span >忘记密码请联系前台MM！</span>
 							</div>
 						</div>
 					</form>

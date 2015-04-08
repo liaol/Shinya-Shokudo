@@ -10,6 +10,8 @@ use App\User;
 use Request;
 use Response;
 use Carbon\Carbon;
+use Auth;
+use Session;
 
 class BackendController extends Controller{
 
@@ -17,7 +19,9 @@ class BackendController extends Controller{
     
     public function __construct()
     {
-        $this->userInfo = array('user_id'=>1);
+        if( $user = Auth::user()) {
+            $this->userInfo = array('user_id'=>$user->id,'level'=>$user->level,'user_name'=>$user->name,'real_name'=>$user->real_name);
+        }
     }
 
     public function login()
@@ -27,11 +31,31 @@ class BackendController extends Controller{
 
     public function loginPost()
     {
+        if (Auth::attempt(['name'=>Request::input('username'),'password'=>Request::input('password')])) {
+            return redirect('/');
+        } else {
+            Request::flashOnly('username');
+            Session::flash('error','用户名或者密码错误！');
+            return redirect('/auth/login');
+        }
+    }
+
+    public function logout()
+    {
+        Auth::logout();
+        return redirect('/');
     }
 
     public function index()
     {
-    
+        if ($this->userInfo['level'] == 1){
+            return redirect('/menu');
+        } elseif ($this->userInfo['level'] == 2){
+            $date = Date('Y-m-d',$_SERVER['REQUEST_TIME']);
+            $time = $this->getTime();
+            return redirect('/admin/order/list?date='.$date.'&time='.$time);
+        }
+        return redirect('/auth/login');
     }
 
     public function listSeller()
@@ -239,15 +263,11 @@ class BackendController extends Controller{
 
     public function updateMoneyPost()
     {
-        $model = User::where('id',Request::input('userId'));
-        if (Request::input('type') == 1) {
-            $update = $model->increment('money',Request::input('money'));
-            //Todo 添加记录
+        if ($this->updateBalance(Request::input('userId'),Request::input('money'),Request::input('type'))){
+            return redirect('/admin/user/list');
         } else {
-            $update = $model->decrement('money',Request::input('money'));
-            //Todo 添加记录
+            return $this->errorPage($this->errMsg);
         }
-        return redirect('/admin/user/list');
     }
 
     private function errorPage($msg,$uri = '/index')
@@ -269,8 +289,7 @@ class BackendController extends Controller{
 
     private function getTime()
     {
-        $today = Carbon::today();
-        if ($_SERVER['REQUEST_TIME'] < $today->timestamp + strtotime($this->getConfig()->lunch_time))
+        if (Date('H:i:s',$_SERVER['REQUEST_TIME']) < ($this->getConfig()->lunch_time))
             return 2;//午餐
         return 3;//晚餐
     }
@@ -319,8 +338,11 @@ class BackendController extends Controller{
             return $this->errorPage('找不到该商家,可能这个时段不送！');
         }
         if($price = Goods::where('status',1)->where('id',Request::input('goods_id'))->select('price')->first()) {
+            if ($balance = $this->updateBalance($this->userInfo['user_id'],$price->price*Request::input('quantity'),2) == false){
+                return $this->errorPage($this->errMsg); 
+            }
             $order = Order::create(array(
-                'seller_id'=>Request::input('time_type'),
+                'seller_id'=>Request::input('seller_id'),
                 'goods_id'=>Request::input('goods_id'),
                 'quantity'=>Request::input('quantity'),
                 'money'=>$price->price*Request::input('quantity'),
@@ -345,10 +367,165 @@ class BackendController extends Controller{
         $data = Order::join('seller','order.seller_id','=','seller.id')
             ->join('goods','order.goods_id','=','goods.id')
             ->where('order.user_id',$this->userInfo['user_id'])
-            ->select('order.id','order.quantity','seller.name as seller_name','goods.name as goods_name','order.money','order.status','order.created_at')
+            ->select('order.id','order.quantity','seller.name as seller_name','goods.name as goods_name','order.money','order.status','order.created_at as time','order.pay_type','order.time_type')
             ->orderBy('order.id','desc')
-            ->paginate(15);
-        return $data;
+            ->paginate(5);
+        return view('front/myorder',array('data'=>$data));
+    }
+
+    /**
+        * @Synopsis  更新余额
+        *
+        * @Param $userId 用户id
+        * @Param $money 变动的金额
+        * @Param $type 操作类型 1为充值 2为消费
+        * @Param $remark 备注
+        *
+        * @Returns  mix 
+     */
+    private function updateBalance($userId,$money,$type,$remark='')
+    {
+        $model = User::where('id',$userId);
+        //如果是扣钱 先检查余额
+        if ($type == 2) {
+            if ($model->where('money','>=',$money)->select('id')->first()){
+                if ($model->decrement('money',$money)) {
+                    $balance = $model->select('money')->first();
+                    $this->makeMoneyRecord($userId,$money,$type,$balance->money,$remark);
+                    return $balance->money;//返回新的余额 
+                } else {
+                    $this->errMsg = '扣钱失败！';
+                    return false;
+                }
+            } else {
+                    $this->errMsg = '余额不足！';
+                    return false;
+            }
+        } elseif ($type == 1) {//充值
+            if ($model->increment('money',$money)){
+                $balance = $model->select('money')->first();
+                $this->makeMoneyRecord($userId,$money,$type,$balance->money,$remark);
+                return $balance->money;
+            } else {
+                $this->errMsg = '充值失败！';
+                return false;
+            }
+        } else {
+            $this->errMsg = '参数有误！';
+            return false;
+        }
+    }
+
+    /**
+        * @Synopsis  记录余额流水
+        *
+        * @Param $userId 用户id
+        * @Param $money 变动的金额
+        * @Param $type 操作类型 1为充值 2为消费
+        * @Param $balance 新的余额
+        * @Param $remark 备注
+        *
+        * @Returns  object 
+     */
+    private function makeMoneyRecord($userId,$money,$type,$balance,$remark='')
+    {
+        return Money::create(array(
+            'user_id'=>$userId,
+            'money'=>$money,
+            'type'=>$type,
+            'remark'=>$remark,
+            'balance'=>$balance,
+        ));
+    }
+
+    public function myRecord()
+    {
+        $data = $this->getUserRecord($this->userInfo['user_id']);
+        return view('front/myrecord',array('data'=>$data)); 
+    }
+
+    private function getUserRecord($userId)
+    {
+        return Money::where('user_id',$userId)->select('id','money','type','remark','created_at as time','balance')->orderBy('id','desc')->paginate(15);
+    }
+
+    /**
+        * @Synopsis  取消订单
+        *
+        * @Param $orderId 订单id array
+        *
+        * @Returns Response 
+     */
+    public function cancleOrder()
+    {
+        $orderId = Request::input('order_id');
+        if (!is_array($orderId)) {
+            $orderId = [$orderId];
+        }
+        //如果是普通用户
+        if ($this->userInfo['level'] == 1) {
+            foreach ($orderId as $v) {
+                if (Order::where('user_id',$this->userInfo['user_id'])->where('id',$v)->where('status',1)->update(array('status'=>4))) {
+                    $money = Order::where('id',$v)->select('money','user_id','pay_type')->first();
+                    if ($money->pay_type == 1)  {//自付的退钱
+                        $this->updateBalance($money->user_id,$money->money,1,'取消订单退回');
+                    }
+                }
+            }
+            return Response::json(array('status'=>'success'));
+        } elseif($this->userInfo['level'] == 2) {
+            //如果是管理员
+            foreach ($orderId as $v) {
+                if (Order::where('id',$v)->where('status',1)->update(array('status'=>3))) {
+                    $money = Order::where('id',$v)->select('money','user_id','pay_type')->first();
+                    if ($money->pay_type == 1)  {//自付的退钱
+                        $this->updateBalance($money->user_id,$money->money,1,'订单审核不通过退回');
+                    }
+                }
+            }
+            return Response::json(array('status'=>'success'));
+        }
+    }
+
+    /**
+        * @Synopsis  订单审核通过
+        *
+        * @Returns  Response 
+     */
+    public function passOrder()
+    {
+        $orderId = Request::input('order_id');
+        if (!is_array($orderId)) {
+            $orderId = [$orderId];
+        }
+        foreach($orderId as $v){
+            Order::where('id',$v)->update(array('status'=>2));
+        }
+        return Response::json(array('status'=>'success'));
+    }
+
+
+    public function listOrder()
+    {
+        $data = Order::join('seller','order.seller_id','=','seller.id')
+            ->join('users','users.id','=','order.user_id')
+            ->join('goods','order.goods_id','=','goods.id')
+            ->select('order.id','order.quantity','seller.name as seller_name','goods.name as goods_name','order.money','order.status','order.created_at as time','order.pay_type','order.time_type','users.real_name as user_name')
+            ->where('order.status','!=',4)
+            ->orderBy('order.id','desc');
+        if ($date = Request::input('date')) {
+            $data = $data->whereBetween('order.created_at',[$date . ' 00:00:00',$date .' 23:59:59']);
+        }
+        if ($time = Request::input('time')) {
+            $data = $data->where('order.time_type',$time);
+        }
+        $dataBak = $data;
+        $data = $data->paginate(15);
+        $count = array(
+            'all'=>$dataBak->count(),
+            'uncheck'=>$dataBak->where('order.status',1)->count(),
+        );
+        return view('backend/listorder',array('data'=>$data,'count'=>$count));
     }
 
 }
