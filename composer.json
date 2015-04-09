@@ -5,7 +5,9 @@
 	"license": "MIT",
 	"type": "project",
 	"require": {
-		"laravel/framework": "5.0.*"
+		"laravel/framework": "5.0.*",
+		"faisalman/simple-excel-php": "dev-master",
+		"overtrue/laravel-pinyin": "dev-master"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "~4.0",

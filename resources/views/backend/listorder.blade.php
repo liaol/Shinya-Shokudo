@@ -3,9 +3,13 @@
 @section('content')
 <div class="container">
     <h2>
-        {{Request::input('date') }} @if(Request::input('time')==2) 午餐 @elseif(Request::input('time')==3) 晚餐 @endif 订单列表<a style="margin-left: 50px;" class="btn btn-info" href="/admin/seller/list">返回商家列表</a>
+        {{Request::input('date') }} @if(Request::input('time')==2) 午餐 @elseif(Request::input('time')==3) 晚餐 @endif 订单列表<a style="margin-left: 50px;" class="btn btn-info" href="/admin/seller/list">商家列表</a>
     </h2>
-    <h3>{{$count['all']}}人点餐，其中{{$count['uncheck']}}人未审核</h3>
+    <h3 class="col-md-4">{{$count['all']}}人点餐，其中{{$count['uncheck']}}人未审核</h3>
+    <form class="col-md-1" method="POST" action="/admin/order/passall">
+        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-success" id="pass-all-btn" >一键通过</button>
+    </form>
     <table class="table table-striped table-bordered">
         <thead>
             <tr>
@@ -97,6 +101,15 @@ $(function(){
         var msg = '确定'+type+user_name+"的"+quantity+"份"+seller_name+"-"+goods_name+'共'+money+"元"+pay_type+"？";
         return msg;
     }
+    $("#pass-all-btn").on("click",function(){
+        var action = $(this).parent().attr('action');
+        if(location.search){
+            $(this).parent().attr('action',action+location.search);
+        }
+        return  confirm('确定通过所有未审核的？');
+
+    
+    });
 });
 </script>
 

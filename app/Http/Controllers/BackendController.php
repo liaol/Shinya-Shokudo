@@ -24,6 +24,10 @@ class BackendController extends Controller{
         }
     }
 
+    private function getDefaultPassword(){
+        return '123456';
+    }
+
     public function login()
     {
         return view('auth.login'); 
@@ -46,14 +50,43 @@ class BackendController extends Controller{
         return redirect('/');
     }
 
+    public function updatePassword()
+    {
+        return view('auth/updatepassword');
+    }
+
+    public function updatePasswordPost()
+    {
+        if (!Auth::validate(array('password'=>Request::input('old_password')))) {
+            Session::flash('error','旧密码错误,如果忘记密码，请联系前台MM!');
+            return redirect('/auth/password/update');
+        } else {
+            Auth::user()->update(array('password'=>\Hash::make(Request::input('new_password'))));
+            Auth::logout();
+            return redirect('/auth/login');
+        }
+    }
+
+    public function resetPassword(){
+        if (User::where('id',Request::input('user_id'))->update(['password'=>\Hash::make($this->getDefaultPassword())])){
+            return Response::json(array('status'=>'success','msg'=>$this->getDefaultPassword()));
+        }
+        return Response::json(array('status'=>'error','msg'=>'重置密码失败！'));
+    }
+
     public function index()
     {
         if ($this->userInfo['level'] == 1){
             return redirect('/menu');
         } elseif ($this->userInfo['level'] == 2){
-            $date = Date('Y-m-d',$_SERVER['REQUEST_TIME']);
-            $time = $this->getTime();
-            return redirect('/admin/order/list?date='.$date.'&time='.$time);
+            $now = new Carbon();//现在时刻
+            $com = Carbon::today()->addHours(13);//下午一点以后显示下午菜单
+            if ($now->lt($com)) {
+                $time = 2; //午餐
+            } else {
+                $time = 3; //晚餐
+            }
+            return redirect('/admin/order/list?date='.$now->toDateString().'&time='.$time);
         }
         return redirect('/auth/login');
     }
@@ -179,7 +212,6 @@ class BackendController extends Controller{
         $realName = Request::input('real_name');
         $department = Request::input('department');
         $qq = Request::input('qq');
-        $defaultPw = '123456';
         $count = count($name) >1 ? count($name)-1 : 1;
         for ($i=0;$i<=$count-1;$i++){//舍去最后一行空的
             User::create(array(
@@ -189,7 +221,7 @@ class BackendController extends Controller{
                 'money'=>0,
                 'status'=>1,
                 'level'=>1,
-                'password'=>\Hash::make($defaultPw),
+                'password'=>\Hash::make($this->getDefaultPassword()),
                 'qq'=>$qq[$i],
             ));
         }
@@ -338,8 +370,10 @@ class BackendController extends Controller{
             return $this->errorPage('找不到该商家,可能这个时段不送！');
         }
         if($price = Goods::where('status',1)->where('id',Request::input('goods_id'))->select('price')->first()) {
-            if ($balance = $this->updateBalance($this->userInfo['user_id'],$price->price*Request::input('quantity'),2) == false){
-                return $this->errorPage($this->errMsg); 
+            if( Request::input('pay_type')==1){//自付才需要扣款
+                if ($balance = $this->updateBalance($this->userInfo['user_id'],$price->price*Request::input('quantity'),2) == false){
+                    return $this->errorPage($this->errMsg); 
+                }
             }
             $order = Order::create(array(
                 'seller_id'=>Request::input('seller_id'),
@@ -364,17 +398,25 @@ class BackendController extends Controller{
 
     public function myOrder()
     {
+        $data = $this->getUserOrder($this->userInfo['user_id']);
+        return view('front/myorder',array('data'=>$data));
+    }
+
+    private function getUserOrder($userId)
+    {
         $data = Order::join('seller','order.seller_id','=','seller.id')
             ->join('goods','order.goods_id','=','goods.id')
-            ->where('order.user_id',$this->userInfo['user_id'])
+            ->where('order.user_id',$userId)
             ->select('order.id','order.quantity','seller.name as seller_name','goods.name as goods_name','order.money','order.status','order.created_at as time','order.pay_type','order.time_type')
             ->orderBy('order.id','desc')
-            ->paginate(5);
-        return view('front/myorder',array('data'=>$data));
+            ->paginate(15);
+        return $data;
     }
 
     /**
         * @Synopsis  更新余额
+        
+        
         *
         * @Param $userId 用户id
         * @Param $money 变动的金额
@@ -389,8 +431,8 @@ class BackendController extends Controller{
         //如果是扣钱 先检查余额
         if ($type == 2) {
             if ($model->where('money','>=',$money)->select('id')->first()){
-                if ($model->decrement('money',$money)) {
-                    $balance = $model->select('money')->first();
+                if (User::where('id',$userId)->decrement('money',$money)) {
+                    $balance = User::where('id',$userId)->select('money')->first();
                     $this->makeMoneyRecord($userId,$money,$type,$balance->money,$remark);
                     return $balance->money;//返回新的余额 
                 } else {
@@ -403,7 +445,7 @@ class BackendController extends Controller{
             }
         } elseif ($type == 1) {//充值
             if ($model->increment('money',$money)){
-                $balance = $model->select('money')->first();
+                $balance = User::where('id',$userId)->select('money')->first();
                 $this->makeMoneyRecord($userId,$money,$type,$balance->money,$remark);
                 return $balance->money;
             } else {
@@ -528,6 +570,44 @@ class BackendController extends Controller{
         return view('backend/listorder',array('data'=>$data,'count'=>$count));
     }
 
+    public function passAllOrder()
+    {
+        $model = Order::where('status',1);
+        if ($date = Request::input('date')){
+            $model->whereBetween('order.created_at',[$date . ' 00:00:00',$date .' 23:59:59']);
+        }
+        if ( $time = Request::input('time')){
+            $model->where('time_type',$time);
+        }
+        $model->update(['status'=>2]);
+        if (Session::get('_previous')['url']) {
+            return redirect(Session::get('_previous')['url']);
+        } else {
+            return redirect('/admin/order/list');
+        }
+    }
+
+    public function userRecord($userId)
+    {
+        $data = $this->getUserRecord($userId);
+        return view('backend/userrecord',array('data'=>$data,'userName'=>$this->getUserName($userId))); 
+    }
+
+    public function userOrder($userId)
+    {
+        $data = $this->getUserOrder($userId);
+        return view('backend/userorder',array('data'=>$data,'userName'=>$this->getUserName($userId))); 
+    
+    }
+
+    private function getUserName($userId)
+    {
+        if ($user = User::where('id',$userId)->select('real_name')->first()) {
+            return $user->real_name;
+        } else {
+            return '';
+        }
+    }
 }
 
 
