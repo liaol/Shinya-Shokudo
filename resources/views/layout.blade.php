@@ -19,22 +19,39 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="#">点餐系统</a>
+				<a class="navbar-brand" href="/">点餐系统</a>
 			</div>
 
 			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-				<ul class="nav navbar-nav">
-					<li><a href="/">菜单</a></li>
-				</ul>
+                @if (Auth::user())
+                    @if (Auth::user()->level == 1)
+                        <ul class="nav navbar-nav">
+                            <li><a href="/menu">菜单</a></li>
+                            <li><a href="/order/my">我的订单</a></li>
+                            <li><a href="/record/my">我的流水</a></li>
+                            <li><a> 余额：{{Auth::user()->money}}</a></li>
+                        </ul>
+                    @elseif (Auth::user()->level ==2)
+                        <ul class="nav navbar-nav">
+                            <li><a href="/">今日订单</a></li>
+                            <li><a href="/menu">菜单</a></li>
+                            <li><a href="/admin/user/list">用户管理</a></li>
+                            <li><a href="/admin/department/list">部门管理</a></li>
+                            <li><a href="/admin/seller/list">商家管理</a></li>
+                        </ul>
+            
+                    @endif 
+                @endif
 
 				<ul class="nav navbar-nav navbar-right">
-					@if (Auth::guest())
+					@if (auth::guest())
 						<li><a href="/auth/login">登录</a></li>
 					@else
 						<li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{ Auth::user()->name }} <span class="caret"></span></a>
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{ Auth::user()->real_name }} <span class="caret"></span></a>
 							<ul class="dropdown-menu" role="menu">
-								<li><a href="/auth/logout">Logout</a></li>
+								<li><a href="/auth/logout">登出</a></li>
+								<li><a href="/auth/password/update">修改密码</a></li>
 							</ul>
 						</li>
 					@endif

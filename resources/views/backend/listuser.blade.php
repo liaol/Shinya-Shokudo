@@ -72,7 +72,8 @@
                     <td>@if ($v['level'] == 1) 普通用户  @else 管理员 @endif</td>
                     <td>{{$v['qq']}}</td>
                     <td>
-                        <a class="btn btn-link btn-sm" href="/admin/goods/list/{{$v['id']}}">历史记录</a>
+                        <a class="btn btn-link btn-sm" href="/admin/user/record/{{$v['id']}}">账户流水</a>
+                        <a class="btn btn-link btn-sm" href="/admin/user/order/{{$v['id']}}">历史订单</a>
                         <a class="btn btn-link btn-sm" href="/admin/money/update?userId={{$v['id']}}">充值</a>
                         <button class="btn btn-primary btn-sm update-btn" data={{$v['id']}}>修改</button>
                         <button class="btn btn-warning btn-sm reset-btn" data={{$v['id']}}>重置密码</button>
@@ -124,6 +125,28 @@
             }
             $("#update-form").show();
         });
+
+        $(".reset-btn").on('click',function(){
+            var real_name = $(this).parent().parent().find('td').eq(1).html();
+            var con = confirm('确定重置'+real_name+'的密码吗？');
+            if(con){
+                var that = $(this);
+                $.ajax({
+                    type:"POST",
+                    url:"/admin/user/resetpassword",
+                    data:{_token:"{{csrf_token()}}",user_id:that.attr('data')}
+                }).done(function(data){
+                    if(data.status == 'success'){
+                        alert(real_name + '的密码已重置为'+data.msg);
+                    }else{
+                        alert(data.msg);
+                    }
+                });
+            }else{
+                return false;
+            }
+        });
+
     });
 </script>
 
