@@ -10,6 +10,14 @@
 </head>
 <body>
     <div class="container">
+    <!--[if IE]>
+        <div class="alert alert-danger alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <ul>
+                    <li>您使用的IE浏览器可能得不到更好的体验，请使用Chrome或FireFox或双核浏览器的极速模式！</li>
+            </ul>
+        </div>
+    <![endif]-->
 	<nav class="navbar navbar-default">
 		<div class="container-fluid">
 			<div class="navbar-header">
@@ -38,6 +46,7 @@
                             <li><a href="/admin/user/list">用户管理</a></li>
                             <li><a href="/admin/department/list">部门管理</a></li>
                             <li><a href="/admin/seller/list">商家管理</a></li>
+                            <li><a href="/admin/time/set">设置点餐时间</a></li>
                         </ul>
             
                     @endif 

@@ -8,7 +8,8 @@
 				<div class="panel-heading">登录</div>
 				<div class="panel-body">
 					@if (Session::has('error'))
-						<div class="alert alert-danger">
+						<div class="alert alert-danger alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 							<ul>
 									<li>{{ Session::get('error') }}</li>
 							</ul>

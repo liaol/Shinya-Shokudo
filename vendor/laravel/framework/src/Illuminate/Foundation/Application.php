@@ -20,7 +20,7 @@ class Application extends Container implements ApplicationContract, HttpKernelIn
 	 *
 	 * @var string
 	 */
-	const VERSION = '5.0.21';
+	const VERSION = '5.0.27';
 
 	/**
 	 * The base path for the Laravel installation.
@@ -72,15 +72,6 @@ class Application extends Container implements ApplicationContract, HttpKernelIn
 	protected $serviceProviders = array();
 
 	/**
-	 * A lookup of service providers by name.
-	 *
-	 * If the a provider is force-registered twice, only the first instance is included.
-	 *
-	 * @var array
-	 */
-	protected $registeredProviders = array();
-
-	/**
 	 * The names of the loaded service providers.
 	 *
 	 * @var array
@@ -93,6 +84,13 @@ class Application extends Container implements ApplicationContract, HttpKernelIn
 	 * @var array
 	 */
 	protected $deferredServices = array();
+
+	/**
+	 * The custom database path defined by the developer.
+	 *
+	 * @var string
+	 */
+	protected $databasePath;
 
 	/**
 	 * The custom storage path defined by the developer.
@@ -302,7 +300,22 @@ class Application extends Container implements ApplicationContract, HttpKernelIn
 	 */
 	public function databasePath()
 	{
-		return $this->basePath.DIRECTORY_SEPARATOR.'database';
+		return $this->databasePath ?: $this->basePath.DIRECTORY_SEPARATOR.'database';
+	}
+
+	/**
+	 * Set the database directory.
+	 *
+	 * @param  string  $path
+	 * @return $this
+	 */
+	public function useDatabasePath($path)
+	{
+		$this->databasePath = $path;
+
+		$this->instance('path.database', $path);
+
+		return $this;
 	}
 
 	/**
@@ -509,7 +522,10 @@ class Application extends Container implements ApplicationContract, HttpKernelIn
 	{
 		$name = is_string($provider) ? $provider : get_class($provider);
 
-		return isset($this->registeredProviders[$name]) ? $this->registeredProviders[$name] : null;
+		return array_first($this->serviceProviders, function($key, $value) use ($name)
+		{
+			return $value instanceof $name;
+		});
 	}
 
 	/**
@@ -534,11 +550,6 @@ class Application extends Container implements ApplicationContract, HttpKernelIn
 		$this['events']->fire($class = get_class($provider), array($provider));
 
 		$this->serviceProviders[] = $provider;
-
-		if ( ! isset($this->registeredProviders[$class]))
-		{
-			$this->registeredProviders[$class] = $provider;
-		}
 
 		$this->loadedProviders[$class] = true;
 	}
@@ -996,7 +1007,7 @@ class Application extends Container implements ApplicationContract, HttpKernelIn
 			'db'                   => 'Illuminate\Database\DatabaseManager',
 			'events'               => ['Illuminate\Events\Dispatcher', 'Illuminate\Contracts\Events\Dispatcher'],
 			'files'                => 'Illuminate\Filesystem\Filesystem',
-			'filesystem'           => 'Illuminate\Contracts\Filesystem\Factory',
+			'filesystem'           => ['Illuminate\Filesystem\FilesystemManager', 'Illuminate\Contracts\Filesystem\Factory'],
 			'filesystem.disk'      => 'Illuminate\Contracts\Filesystem\Filesystem',
 			'filesystem.cloud'     => 'Illuminate\Contracts\Filesystem\Cloud',
 			'hash'                 => 'Illuminate\Contracts\Hashing\Hasher',

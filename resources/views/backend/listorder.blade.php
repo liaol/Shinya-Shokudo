@@ -77,7 +77,7 @@ $(function(){
         if(con){
             $.ajax({
                 type:"POST",
-                url:"/admin/order/cancle",
+                url:"/order/cancel",
                 data:{_token:"{{csrf_token()}}",order_id:that.attr('data')}
             }).done(function(data){
                 if(data.status == 'success'){

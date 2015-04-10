@@ -43,7 +43,9 @@
                 </div>
             </div>
             <div class="form-group">
-                <button class="btn btn-primary col-md-1 col-md-offset-1" type="submit">确认订单</button>
+                <div class="row">
+                    <button class="btn btn-primary col-md-1 col-md-offset-1" type="submit">确认订单</button>
+                </div>
             </div>
         </form>
     </div>

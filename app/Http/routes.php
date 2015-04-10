@@ -31,6 +31,8 @@ Route::group(array('domain'=>'','middleware'=>'isLogin'),function(){
         Route::get('/seller/add',array('uses'=>'BackendController@addSeller'));
         Route::post('/seller/add',array('uses'=>'BackendController@addSellerPost'));
         Route::post('/seller/update',array('uses'=>'BackendController@updateSellerPost'));
+        Route::get('/seller/addbyurl',array('uses'=>'BackendController@addSellerByUrl'));
+        Route::post('/seller/addbyurl',array('uses'=>'BackendController@addSellerByUrlPost'));
 
         Route::get('/goods/list/{sellerId}',array('uses'=>'BackendController@listGoods'));
         Route::post('/goods/update',array('uses'=>'BackendController@updateGoodsPost'));
@@ -56,31 +58,31 @@ Route::group(array('domain'=>'','middleware'=>'isLogin'),function(){
         Route::post('/order/pass',array('uses'=>'BackendController@passOrder'));
         Route::post('/order/passall',array('uses'=>'BackendController@passAllOrder'));
 
+        Route::get('/time/set',array('uses'=>'BackendController@setTime'));
+        Route::post('/time/set',array('uses'=>'BackendController@setTimePost'));
+
     });
 
     Route::get('/menu',array('uses'=>'BackendController@menu'));
     Route::get('/order/make',array('uses'=>'BackendController@makeOrder'));
     Route::post('/order/make',array('uses'=>'BackendController@makeOrderPost'));
     Route::get('/order/my',array('uses'=>'BackendController@myOrder'));
-    Route::post('/order/cancel',array('uses'=>'BackendController@cancleOrder'));
+    Route::post('/order/cancel',array('uses'=>'BackendController@cancelOrder'));
     Route::get('/order/list',array('uses'=>'BackendController@listOrder'));
 
     Route::get('/record/my',array('uses'=>'BackendController@myRecord'));
 });
 
-Route::get('/t',function(){
-    $excel = new SimpleExcel\SimpleExcel('csv');
-    $excel->parser->loadFile(base_path().'/people.csv');
-    $data = array();
-    $pinyin = App::make('pinyin');
-    $pinyin->set('accent', false);
-    $pinyin->set('delimiter','');
-    for($i=1;$i<56;$i++){
-        $data[] = array(
-            'name'=>$excel->parser->getCell($i+1,2),
-            'department'=>$excel->parser->getCell($i+1,3),
-            'pinyin'=>$pinyin->trans($excel->parser->getCell($i+1,2)),
-        );
-    }
-    return $data;
-});
+
+
+
+
+
+
+
+
+
+
+
+
+

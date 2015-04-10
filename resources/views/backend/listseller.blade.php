@@ -2,7 +2,10 @@
 
 @section('content')
 <div class="container">
-    <h2>商家列表<a style="margin-left: 50px;" class="btn btn-info" href="/admin/seller/add">添加商家</a></h2>
+    <h2>商家列表
+        <a style="margin-left: 50px;" class="btn btn-info" href="/admin/seller/add">添加商家</a>
+        <a style="margin-left: 20px;" class="btn btn-info" href="/admin/seller/addbyurl">通过链接添加商家</a>
+    </h2>
     <div class="well" style="display:none" id="update-form">
         <form method="POST" class="form-horizontal" action="/admin/seller/update" >
         <input type="hidden" name="_token" value="{{ csrf_token() }}">

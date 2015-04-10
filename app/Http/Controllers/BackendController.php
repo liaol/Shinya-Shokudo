@@ -310,9 +310,8 @@ class BackendController extends Controller{
     //菜单
     public function menu()
     {
-        
         $time = $this->getTime(); 
-        $seller = Seller::where('status',1)->whereIn('delivery_time',[$time,3])->select('id','name','phone','remark','delivery_time')->get()->toArray();
+        $seller = Seller::where('status',1)->whereIn('delivery_time',[$time,1])->select('id','name','phone','remark','delivery_time')->get()->toArray();
         foreach ($seller as $k=>$v) {
             $seller[$k]['menu'] = Goods::where('status',1)->where('seller_id',$v['id'])->select('id','name','count','price')->get()->toArray();
         }
@@ -391,9 +390,29 @@ class BackendController extends Controller{
         }
     }
 
+    /**
+        * @Synopsis  检查点餐是否在规定时间内
+        *
+        * @Param $type 2为午餐 3为晚餐
+        *
+        * @Returns  boolean 
+     */
     private function checkTime($type)
     {
-        return true;
+        if ($type == 2) {
+            $key = 'lunch_time';
+        }elseif ($type == 3){
+            $key = 'supper_time';
+        }
+        $config = ConfigModel::select($key)->first();
+        $config = new Carbon($config->$key);
+        $now = new Carbon();//现在时刻
+        $time = Carbon::today()->addHours($config->hour);
+        $time = $time->addMinutes($config->minute);
+        if ($now->lt($time)) {
+            return true;
+        }
+        return false;
     }
 
     public function myOrder()
@@ -498,7 +517,7 @@ class BackendController extends Controller{
         *
         * @Returns Response 
      */
-    public function cancleOrder()
+    public function cancelOrder()
     {
         $orderId = Request::input('order_id');
         if (!is_array($orderId)) {
@@ -607,6 +626,57 @@ class BackendController extends Controller{
         } else {
             return '';
         }
+    }
+
+    public function addSellerByUrl()
+    {
+        return view('backend/addsellerbyurl');
+    }
+
+    public function addSellerByUrlPost()
+    {
+        $url = Request::input('url');
+        if (empty($url)){
+            return $this->errorPage('请输入店铺的链接！');
+        }
+        require app_path().'/Libraies/ParseWebsite.php';
+        if (strpos($url,'waimai.baidu.com')){
+            $data = baidu($url);
+        } else {
+            return $this->errorPage('暂时只支持百度外卖');
+        }
+        if (empty($data)) {
+            return $this->errorPage('抓取失败，请检查链接是否正确!');
+        }
+        $seller = Seller::create(array('name'=>$data['title'],'status'=>1,'delivery_time'=>1));
+        if ($seller) {
+            foreach ($data['menu'] as $v) {
+                Goods::create(array(
+                    'seller_id'=>$seller->id,
+                    'name'=>$v['name'],
+                    'price'=>$v['price'],
+                    'status'=>1,
+                    'count'=>0,
+                ));
+            }
+        }
+        return redirect('/admin/seller/list');
+    }
+
+    public function setTime()
+    {
+        $time = ConfigModel::select('lunch_time','supper_time')->first();
+        return view('backend/settime',array('time'=>$time));
+    }
+
+    public function setTimePost()
+    {
+        ConfigModel::where('id',1)->update(array(
+            'lunch_time'=>Request::input('lunch'),
+            'supper_time'=>Request::input('supper')
+        ));
+        Session::flash('msg','设置时间成功！');
+        return redirect('/admin/time/set');
     }
 }
 
