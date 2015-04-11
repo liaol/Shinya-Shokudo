@@ -20,6 +20,7 @@
                 <th>金额</th>
                 <th>时间类型</th>
                 <th>支付类型</th>
+                <th>备注</th>
                 <th>状态</th>
                 <th>时间</th>
                 <th>操作</th>
@@ -35,6 +36,7 @@
                     <td>{{$v['money']}}</td>
                     <td>@if($v['time_type'] == 2) 午餐 @else 晚餐 @endif</td> 
                     <td>@if($v['pay_type'] == 1) 自付 @else 公司付 @endif</td> 
+                    <td>{{$v['remark']}}</td>
                     <td>@if($v['status'] == 1)未审核@elseif($v['status']==2)审核通过 @elseif($v['status']==3)审核未通过@else 已取消 @endif </td>
                     <td>{{$v['time']}}</td>
                     <td>

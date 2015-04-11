@@ -9,10 +9,9 @@
     var sec = 3;
     function redirect(){
         if (sec > 0){
-            var str = sec + '秒后跳转到<a href="{{$uri}}">{{$uri}}</a>';
+            var str = sec + '秒后跳转到<a href="{{$uri}}">@if($uri=="/") 首页 @else {{$uri}} @endif</a>';
             $("#redirect").html(str);
             sec--;
-            console.log(sec);
             setTimeout(redirect,1000);
         }else {
             window.location.href  = "{{$uri}}";

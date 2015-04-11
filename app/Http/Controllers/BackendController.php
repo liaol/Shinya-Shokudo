@@ -359,8 +359,7 @@ class BackendController extends Controller{
             )
         );      
         if ($validator->fails()) {
-            return $validator->messages()->all();
-            return $this->errorPage('系统错误！');
+            return $this->errorPage($validator->messages()->first ());
         }
         if (!$this->checkTime(Request::input('time_type'))){
             return $this->errorPage('点餐时间已过，请联系前台妹纸！');
@@ -382,6 +381,7 @@ class BackendController extends Controller{
                 'status'=>1,
                 'time_type'=>Request::input('time_type'),
                 'pay_type'=>Request::input('pay_type'),
+                'remark'=>Request::input('remark'),
                 'user_id' => $this->userInfo['user_id'],
             ));
             return redirect('/order/my');
@@ -568,10 +568,11 @@ class BackendController extends Controller{
 
     public function listOrder()
     {
+        //todo 汇总
         $data = Order::join('seller','order.seller_id','=','seller.id')
             ->join('users','users.id','=','order.user_id')
             ->join('goods','order.goods_id','=','goods.id')
-            ->select('order.id','order.quantity','seller.name as seller_name','goods.name as goods_name','order.money','order.status','order.created_at as time','order.pay_type','order.time_type','users.real_name as user_name')
+            ->select('order.id','order.quantity','seller.name as seller_name','goods.name as goods_name','order.money','order.status','order.created_at as time','order.pay_type','order.time_type','users.real_name as user_name','order.remark')
             ->where('order.status','!=',4)
             ->orderBy('order.id','desc');
         if ($date = Request::input('date')) {
