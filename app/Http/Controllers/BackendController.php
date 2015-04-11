@@ -287,7 +287,7 @@ class BackendController extends Controller{
         if ($userId = Request::input('userId')) {
             $userInfo = User::where('id',$userId)->select('id','real_name','money')->first();
             if (empty($userInfo)) {
-                return $this->errorPage('找不着该用户');
+                return $this->errorPage('找不着该用户','/admin/user/list');
             }
             return view('backend/updatemoney',array('userInfo'=>$userInfo));
         }
@@ -298,13 +298,13 @@ class BackendController extends Controller{
         if ($this->updateBalance(Request::input('userId'),Request::input('money'),Request::input('type'))){
             return redirect('/admin/user/list');
         } else {
-            return $this->errorPage($this->errMsg);
+            return $this->errorPage($this->errMsg,'/admin/user/list');
         }
     }
 
-    private function errorPage($msg,$uri = '/index')
+    private function errorPage($msg,$uri = '/')
     {
-        return $msg;
+        return view('error',array('msg'=>$msg,'uri'=>$uri));
     }
 
     //菜单
@@ -315,7 +315,7 @@ class BackendController extends Controller{
         foreach ($seller as $k=>$v) {
             $seller[$k]['menu'] = Goods::where('status',1)->where('seller_id',$v['id'])->select('id','name','count','price')->get()->toArray();
         }
-        return view('/front/menu',array('data'=>$seller));
+        return view('/front/menu',array('data'=>$seller,'config'=>$this->getConfig()));
     }
 
     private function getTime()
@@ -637,16 +637,16 @@ class BackendController extends Controller{
     {
         $url = Request::input('url');
         if (empty($url)){
-            return $this->errorPage('请输入店铺的链接！');
+            return $this->errorPage('请输入店铺的链接！','/admin/seller/addbyurl');
         }
         require app_path().'/Libraies/ParseWebsite.php';
         if (strpos($url,'waimai.baidu.com')){
             $data = baidu($url);
         } else {
-            return $this->errorPage('暂时只支持百度外卖');
+            return $this->errorPage('暂时只支持百度外卖','/admin/seller/addbyurl');
         }
         if (empty($data)) {
-            return $this->errorPage('抓取失败，请检查链接是否正确!');
+            return $this->errorPage('抓取失败，请检查链接是否正确!','/admin/seller/addbyurl');
         }
         $seller = Seller::create(array('name'=>$data['title'],'status'=>1,'delivery_time'=>1));
         if ($seller) {
