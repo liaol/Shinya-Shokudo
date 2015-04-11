@@ -27,39 +27,54 @@ Route::group(array('domain'=>'','middleware'=>'isLogin'),function(){
     Route::group(array('prefix'=>'/admin','middleware'=>'isAdmin'),function(){
         Route::get('/index',array('uses'=>'BackendController@index'));
 
-        Route::get('/seller/list',array('uses'=>'BackendController@listSeller'));
-        Route::get('/seller/add',array('uses'=>'BackendController@addSeller'));
-        Route::post('/seller/add',array('uses'=>'BackendController@addSellerPost'));
-        Route::post('/seller/update',array('uses'=>'BackendController@updateSellerPost'));
-        Route::get('/seller/addbyurl',array('uses'=>'BackendController@addSellerByUrl'));
-        Route::post('/seller/addbyurl',array('uses'=>'BackendController@addSellerByUrlPost'));
+        Route::group(array('prefix'=>'/seller'),function(){
+            Route::get('/list',array('uses'=>'BackendController@listSeller'));
+            Route::get('/add',array('uses'=>'BackendController@addSeller'));
+            Route::post('/add',array('uses'=>'BackendController@addSellerPost'));
+            Route::post('/update',array('uses'=>'BackendController@updateSellerPost'));
+            Route::get('/addbyurl',array('uses'=>'BackendController@addSellerByUrl'));
+            Route::post('/addbyurl',array('uses'=>'BackendController@addSellerByUrlPost'));
+        });
 
-        Route::get('/goods/list/{sellerId}',array('uses'=>'BackendController@listGoods'));
-        Route::post('/goods/update',array('uses'=>'BackendController@updateGoodsPost'));
-        Route::post('/goods/add',array('uses'=>'BackendController@addGoodsPost'));
+        Route::group(array('prefix'=>'/goods'),function(){
+            Route::get('/list/{sellerId}',array('uses'=>'BackendController@listGoods'));
+            Route::post('/update',array('uses'=>'BackendController@updateGoodsPost'));
+            Route::post('/add',array('uses'=>'BackendController@addGoodsPost'));
+        });
 
-        Route::get('/user/list',array('uses'=>'BackendController@listUser'));
-        Route::get('/user/add',array('uses'=>'BackendController@addUser'));
-        Route::post('/user/add',array('uses'=>'BackendController@addUserPost'));
-        Route::post('/user/update',array('uses'=>'BackendController@updateUserPost'));
-        Route::post('/user/resetpassword',array('uses'=>'BackendController@resetPassword'));
-        Route::get('/user/record/{userId}',array('uses'=>'BackendController@userRecord'));
-        Route::get('/user/order/{userId}',array('uses'=>'BackendController@userOrder'));
+        Route::group(array('prefix'=>'/user'),function(){
+            Route::get('/list',array('uses'=>'BackendController@listUser'));
+            Route::get('/add',array('uses'=>'BackendController@addUser'));
+            Route::post('/add',array('uses'=>'BackendController@addUserPost'));
+            Route::get('/update/{userId}',array('uses'=>'BackendController@updateUser'));
+            Route::post('/update',array('uses'=>'BackendController@updateUserPost'));
+            Route::post('/resetpassword',array('uses'=>'BackendController@resetPassword'));
+            Route::get('/record/{userId}',array('uses'=>'BackendController@userRecord'));
+            Route::get('/order/{userId}',array('uses'=>'BackendController@userOrder'));
+        });
 
-        Route::get('/department/list',array('uses'=>'BackendController@listDepartment'));
-        Route::post('/department/add',array('uses'=>'BackendController@addDepartmentPost'));
-        Route::post('/department/update',array('uses'=>'BackendController@updateDepartmentPost'));
+        Route::group(array('prefix'=>'/department'),function(){
+            Route::get('/list',array('uses'=>'BackendController@listDepartment'));
+            Route::post('/add',array('uses'=>'BackendController@addDepartmentPost'));
+            Route::post('/update',array('uses'=>'BackendController@updateDepartmentPost'));
+        });
 
-        Route::get('/money/update',array('uses'=>'BackendController@updateMoney'));
-        Route::post('/money/update',array('uses'=>'BackendController@updateMoneyPost'));
+        Route::group(array('prefix'=>'/money'),function(){
+            Route::get('/update',array('uses'=>'BackendController@updateMoney'));
+            Route::post('/update',array('uses'=>'BackendController@updateMoneyPost'));
+        });
 
-        Route::get('/order/list',array('uses'=>'BackendController@listOrder'));
-        Route::post('/order/list',array('uses'=>'BackendController@listOrder'));
-        Route::post('/order/pass',array('uses'=>'BackendController@passOrder'));
-        Route::post('/order/passall',array('uses'=>'BackendController@passAllOrder'));
+        Route::group(array('prefix'=>'/order'),function(){
+            Route::get('/list',array('uses'=>'BackendController@listOrder'));
+            Route::post('/list',array('uses'=>'BackendController@listOrder'));
+            Route::post('/pass',array('uses'=>'BackendController@passOrder'));
+            Route::post('/passall',array('uses'=>'BackendController@passAllOrder'));
+        });
 
-        Route::get('/time/set',array('uses'=>'BackendController@setTime'));
-        Route::post('/time/set',array('uses'=>'BackendController@setTimePost'));
+        Route::group(array('prefix'=>'/time'),function(){
+            Route::get('/set',array('uses'=>'BackendController@setTime'));
+            Route::post('/set',array('uses'=>'BackendController@setTimePost'));
+        });
 
     });
 
@@ -69,7 +84,6 @@ Route::group(array('domain'=>'','middleware'=>'isLogin'),function(){
     Route::get('/order/my',array('uses'=>'BackendController@myOrder'));
     Route::post('/order/cancel',array('uses'=>'BackendController@cancelOrder'));
     Route::get('/order/list',array('uses'=>'BackendController@listOrder'));
-
     Route::get('/record/my',array('uses'=>'BackendController@myRecord'));
 });
 

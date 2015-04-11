@@ -75,7 +75,7 @@
                         <a class="btn btn-link btn-sm" href="/admin/user/record/{{$v['id']}}">账户流水</a>
                         <a class="btn btn-link btn-sm" href="/admin/user/order/{{$v['id']}}">历史订单</a>
                         <a class="btn btn-link btn-sm" href="/admin/money/update?userId={{$v['id']}}">充值</a>
-                        <button class="btn btn-primary btn-sm update-btn" data={{$v['id']}}>修改</button>
+                        <a class="btn btn-link btn-sm" href="/admin/user/update/{{$v['id']}}">修改</a>
                         <button class="btn btn-warning btn-sm reset-btn" data={{$v['id']}}>重置密码</button>
                         <button class="btn btn-danger btn-sm del-btn" data={{$v['id']}}>删除</button>
                     </td>   

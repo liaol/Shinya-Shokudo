@@ -685,6 +685,16 @@ class BackendController extends Controller{
         Session::flash('msg','设置时间成功！');
         return redirect('/admin/time/set');
     }
+
+    public function updateUser($userId)
+    {
+        $user = User::where('id',$userId)->first();
+        if (empty ($user)) {
+            return $this->errorPage('没有该用户','/admin/user/list');
+        }
+        $department = Department::where('status',1)->select('id','name')->get()->toArray();
+        return view('backend/updateuser',array('user'=>$user,'department'=>$department));
+    }
 }
 
 
