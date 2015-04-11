@@ -16,7 +16,6 @@
         <h3>{{$v['name']}}</h3> 
         <h4>电话：{{$v['phone']}}&nbsp;&nbsp;&nbsp;备注：{{$v['remark']}}</h4>
         <table>
-        <!-->五个一行<!-->
         @for($i = 0;$i<(count($v['menu']));$i+=5)
         <tr>
             @for($k = $i;$k<$i+5;$k++)

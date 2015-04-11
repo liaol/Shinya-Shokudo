@@ -671,10 +671,17 @@ class BackendController extends Controller{
 
     public function setTimePost()
     {
-        ConfigModel::where('id',1)->update(array(
-            'lunch_time'=>Request::input('lunch'),
-            'supper_time'=>Request::input('supper')
-        ));
+        if (ConfigModel::select('lunch_time','supper_time')->first()){
+            ConfigModel::where('id',1)->update(array(
+                'lunch_time'=>Request::input('lunch'),
+                'supper_time'=>Request::input('supper')
+            ));
+        } else {
+            ConfigModel::create(array(
+                'lunch_time'=>Request::input('lunch'),
+                'supper_time'=>Request::input('supper')
+            ));
+        }
         Session::flash('msg','设置时间成功！');
         return redirect('/admin/time/set');
     }
