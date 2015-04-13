@@ -49,6 +49,36 @@
             </div>
         </form>
     </div>
+    @if (!empty($order))
+        <h3>看看其他人都点了什么</h3>
+        <table class="table table-striped table-bordered table-condensed">
+            @if (!empty($money))
+                <caption>
+                    @foreach ($money as $k=>$v)
+                        {{$k}} : {{$v}} 元&nbsp;
+                    @endforeach
+                </caption>
+            @endif
+            <thead>
+                <tr>
+                    <th>姓名</th>
+                    <th>商家</th>
+                    <th>菜名</th>
+                    <th>数量</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($order as $k=>$v)
+                    <tr>
+                        <td>{{$v['user_name']}}</td>
+                        <td>{{$v['seller_name']}}</td>
+                        <td>{{$v['goods_name']}}</td>
+                        <td>{{$v['quantity']}}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
 </div>
 <script type="text/javascript">
     function Add( node)

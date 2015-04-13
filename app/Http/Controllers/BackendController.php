@@ -342,7 +342,16 @@ class BackendController extends Controller{
         if (empty($goods)) {
             return $this->errorPage('找不到这道菜！');
         }
-        return view('/front/makeorder',array('seller'=>$seller,'goods'=>$goods));
+        $order = Order::join('seller','order.seller_id','=','seller.id')
+            ->join('users','users.id','=','order.user_id')
+            ->join('goods','order.goods_id','=','goods.id')
+            ->select('order.id','order.quantity','seller.name as seller_name','goods.name as goods_name','order.money','order.status','order.created_at as time','order.pay_type','order.time_type','users.real_name as user_name','order.remark')
+            ->where('order.status','!=',4)
+            ->orderBy('order.id','desc')
+            ->get()
+            ->toArray();
+        $money =  $this->getOrderGather(Carbon::today()->toDateString(),$this->getTime())['money'];
+        return view('/front/makeorder',array('seller'=>$seller,'goods'=>$goods,'order'=>$order,'money'=>$money));
     }
 
     public function makeOrderPost()
@@ -568,7 +577,6 @@ class BackendController extends Controller{
 
     public function listOrder()
     {
-        //todo 汇总
         $data = Order::join('seller','order.seller_id','=','seller.id')
             ->join('users','users.id','=','order.user_id')
             ->join('goods','order.goods_id','=','goods.id')
@@ -587,7 +595,8 @@ class BackendController extends Controller{
             'all'=>$dataBak->count(),
             'uncheck'=>$dataBak->where('order.status',1)->count(),
         );
-        return view('backend/listorder',array('data'=>$data,'count'=>$count));
+        $gather =  $this->getOrderGather(Request::input('date'),Request::input('time'),2);
+        return view('backend/listorder',array('data'=>$data,'count'=>$count,'gather'=>$gather['order'],'money'=>$gather['money']));
     }
 
     public function passAllOrder()
@@ -695,6 +704,53 @@ class BackendController extends Controller{
         }
         $department = Department::where('status',1)->select('id','name')->get()->toArray();
         return view('backend/updateuser',array('user'=>$user,'department'=>$department));
+    }
+
+    /**
+        * @Synopsis  获取订单汇总信息 
+        *
+        * @Param $date
+        * @Param $time
+        * @Param $status
+        *
+        * @Returns  array 
+     */
+    private function getOrderGather($date,$time,$status=null)
+    {
+        $order = Order::join('seller','order.seller_id','=','seller.id')
+            ->join('goods','order.goods_id','=','goods.id')
+            ->whereBetween('order.created_at',[$date . ' 00:00:00',$date .' 23:59:59'])
+            ->where('time_type',$time);
+        if (!empty($status)) {
+            $order->where('order.status',$status);
+        } else {
+            $order->where('order.status','!=',4);
+        }
+        $order = $order->select('seller.name as seller_name','goods.name as goods_name','order.quantity','order.money')
+            ->get()
+            ->toArray();
+        $data = [];
+        //合并
+        foreach ($order as $k=>$v) {
+            if (array_key_exists($v['seller_name'],$data)) {//检查商家name key是否存在
+                if (array_key_exists($v['goods_name'],$data[$v['seller_name']])) {//检查商品name key是否存在
+                    $data[$v['seller_name']][$v['goods_name']] += $v['quantity'];//对应数量累加
+                } else {
+                    $data[$v['seller_name']][$v['goods_name']] = (int) $v['quantity'];
+                }
+            } else {
+                $data[$v['seller_name']] = array ($v['goods_name']=> (int) $v['quantity']);
+            }
+        }
+        $money = [];
+        foreach ($order as $k=>$v) {
+            if (array_key_exists($v['seller_name'],$money)) {//检查商家name key是否存在
+                $money[$v['seller_name']] += (double)$v['money'];
+            } else {
+                $money[$v['seller_name']] = (double) $v['money'];
+            }
+        }
+        return array('order'=>$data,'money'=>$money);
     }
 }
 
