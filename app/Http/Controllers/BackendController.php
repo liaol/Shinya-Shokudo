@@ -342,15 +342,19 @@ class BackendController extends Controller{
         if (empty($goods)) {
             return $this->errorPage('找不到这道菜！');
         }
+        $date= Carbon::today()->toDateString();
+        $time = $this->getTime();
         $order = Order::join('seller','order.seller_id','=','seller.id')
             ->join('users','users.id','=','order.user_id')
             ->join('goods','order.goods_id','=','goods.id')
             ->select('order.id','order.quantity','seller.name as seller_name','goods.name as goods_name','order.money','order.status','order.created_at as time','order.pay_type','order.time_type','users.real_name as user_name','order.remark')
             ->where('order.status','!=',4)
+            ->whereBetween('order.created_at',[$date . ' 00:00:00',$date .' 23:59:59'])
+            ->where('order.time_type',$time)
             ->orderBy('order.id','desc')
             ->get()
             ->toArray();
-        $money =  $this->getOrderGather(Carbon::today()->toDateString(),$this->getTime())['money'];
+        $money =  $this->getOrderGather($date,$time)['money'];
         return view('/front/makeorder',array('seller'=>$seller,'goods'=>$goods,'order'=>$order,'money'=>$money));
     }
 
