@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM library/nginx
 
 # Miantainer
 MAINTAINER liaol
@@ -11,13 +11,13 @@ ENV SITEPATH "/home/$USERNAME/public_html"
 RUN useradd -d /home/$USERNAME -m $USERNAME
 RUN chsh -s /bin/bash $USERNAME
 
-RUN apt-get -y install nginx php5
+#RUN apt-get -y install nginx php5
 # Add base nginx conf
 ADD ./config/default_nginx_conf /usr/local/nginx/conf/nginx.conf
 
 # Add a default vhost, activate host file
 ADD ./config/default_vhost /usr/local/nginx/conf/sites-available/default.conf
-RUN ln -s /usr/local/nginx/conf/sites-available/default.conf /usr/local/nginx/conf/sites-enabled/default.conf
+#RUN ln -s /usr/local/nginx/conf/sites-available/default.conf /usr/local/nginx/conf/sites-enabled/default.conf
 
 # Set up php fpm, restart php
 ADD ./config/default_php_pool /etc/php5/fpm/pool.d/default.conf
