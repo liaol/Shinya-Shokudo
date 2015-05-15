@@ -3,8 +3,9 @@ FROM nginx
 # Miantainer
 MAINTAINER liaol
 
+ENV USERNAME laravel
 # ENVIRONMENTAL variables
-ENV SITEPATH "/var/www/public_html"
+ENV SITEPATH "/home/$USERNAME/public_html"
 
 # create a user
 RUN useradd -d /home/$USERNAME -m $USERNAME
