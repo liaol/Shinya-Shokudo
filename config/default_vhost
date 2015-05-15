@@ -1,0 +1,27 @@
+server {
+    listen 80;
+    root /home/laravel/public;
+    index index.php index.html;
+ 
+    location / {
+        try_files $uri $uri/ /index.php;
+    }
+ 
+    location ~* \.(?:ico|css|js|gif|jpe?g|png|ttf|woff)$ {
+        access_log off;
+        expires 30d;
+        add_header Pragma public;
+        add_header Cache-Control "public, mustrevalidate, proxy-revalidate";
+    }
+ 
+    location = /robots.txt { access_log off; log_not_found off; }
+    location = /favicon.ico { access_log off; log_not_found off; }
+ 
+    location ~ \.php$ {
+        fastcgi_pass 127.0.0.1:9090;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param HTTPS off;
+    }
+}

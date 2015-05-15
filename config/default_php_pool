@@ -1,0 +1,15 @@
+[laravel] 
+listen = 127.0.0.1:9090
+user = laravel
+request_slowlog_timeout = 5s
+slowlog = /var/log/php-slowlog.log
+listen.allowed_clients = 127.0.0.1 
+pm = dynamic
+pm.max_children = 6
+pm.start_servers = 3
+pm.min_spare_servers = 2
+pm.max_spare_servers = 4
+pm.max_requests = 200
+security.limit_extensions = .php .html
+php_flag[display_errors] = on
+php_flag[display_startup_errors] = on
