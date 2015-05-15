@@ -1,4 +1,4 @@
-FROM nginx
+FROM ubuntu
 
 # Miantainer
 MAINTAINER liaol
@@ -11,6 +11,7 @@ ENV SITEPATH "/home/$USERNAME/public_html"
 RUN useradd -d /home/$USERNAME -m $USERNAME
 RUN chsh -s /bin/bash $USERNAME
 
+RUN apt-get install nginx php5 php5-fpm php5-mcrypt
 # Add base nginx conf
 ADD ./config/default_nginx_conf /usr/local/nginx/conf/nginx.conf
 
