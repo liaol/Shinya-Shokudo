@@ -1,4 +1,4 @@
-FROM base/nginx
+FROM nginx
 
 # Miantainer
 MAINTAINER liaol
