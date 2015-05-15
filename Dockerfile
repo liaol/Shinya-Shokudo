@@ -11,7 +11,7 @@ ENV SITEPATH "/home/$USERNAME/public_html"
 RUN useradd -d /home/$USERNAME -m $USERNAME
 RUN chsh -s /bin/bash $USERNAME
 
-RUN apt-get install nginx php5 php5-fpm php5-mcrypt
+RUN apt-get -y install nginx php5
 # Add base nginx conf
 ADD ./config/default_nginx_conf /usr/local/nginx/conf/nginx.conf
 
